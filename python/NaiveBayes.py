@@ -51,8 +51,12 @@ class NaiveBayes:
       'words' is a list of words to classify. Return 'pos' or 'neg' classification.
     """
     pos_neg_total=self.posTotal+self.negTotal
-    prior_pos = math.log(self.posTotal / self.pos_neg_total)
-    prior_neg = math.log(self.negTotal / self.pos_neg_total)
+    prior_pos = math.log(self.posTotal / pos_neg_total)
+    prior_neg = math.log(self.negTotal / pos_neg_total)
+    pos_denom = math.log(sum(self.posFreqDict.values()) + self.vocabSize + 1)
+    neg_denom = math.log(sum(self.negFreqDict.values()) + self.vocabSize + 1)
+    prob_pos = 0
+    prob_neg = 0
 
     if self.FILTER_STOP_WORDS:
       words =  self.filterStopWords(words)
@@ -61,7 +65,26 @@ class NaiveBayes:
     if self.BOOLEAN_NB:
       words = (list(set(words)))
 
-    return 'pos'
+    for word in words:
+      if word in self.posFreqDict:
+        word_num = math.log(self.posFreqDict[word]+1)
+      else:
+        word_num = 0
+		
+      prob_pos += word_num - pos_denom
+      
+      if word in self.negFreqDict:
+        word_num = math.log(self.negFreqDict[word]+1)
+      else:
+        word_num = 0
+
+      prob_neg += word_num - neg_denom
+    
+    if (prob_pos+prior_pos) > (prob_neg+prior_neg):
+        return 'pos'
+    else:
+        return 'neg'
+
   
 
   def addExample(self, klass, words):
