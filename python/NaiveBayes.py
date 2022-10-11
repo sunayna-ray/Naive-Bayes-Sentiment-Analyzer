@@ -27,6 +27,12 @@ class NaiveBayes:
     self.BOOLEAN_NB = False
     self.stopList = set(self.readFile('../data/english.stop'))
     self.numFolds = 10
+    self.posTotal=0
+    self.negTotal=0
+    self.vocab=set()
+    self.vocabSize=0
+    self.posFreqDict=dict()
+    self.negFreqDict=dict()
 
   #############################################################################
   # TODO TODO TODO TODO TODO 
@@ -44,10 +50,16 @@ class NaiveBayes:
     """ TODO
       'words' is a list of words to classify. Return 'pos' or 'neg' classification.
     """
+    pos_neg_total=self.posTotal+self.negTotal
+    prior_pos = math.log(self.posTotal / self.pos_neg_total)
+    prior_neg = math.log(self.negTotal / self.pos_neg_total)
+
     if self.FILTER_STOP_WORDS:
       words =  self.filterStopWords(words)
 
-    # Write code here
+    # Get unique collection of words if binary nb
+    if self.BOOLEAN_NB:
+      words = (list(set(words)))
 
     return 'pos'
   
@@ -61,11 +73,27 @@ class NaiveBayes:
      * in the NaiveBayes class.
      * Returns nothing
     """
+    # Get unique collection of words if binary nb
+    if self.BOOLEAN_NB:
+      words = (list(set(words)))
+    if klass == 'pos':
+        self.posTotal += 1
+    elif klass == 'neg':
+        self.negTotal +=1
+    else:
+        print("New class %s" % klass)
+    for word in words:
+      self.vocab.add(word)
+      if klass=='pos':
+        if word not in self.posFreqDict:
+          self.posFreqDict[word] = 0
+        self.posFreqDict[word] += 1
+      else:
+        if word not in self.negFreqDict:
+          self.negFreqDict[word] = 0
+        self.negFreqDict[word] += 1
 
-
-    # Write code here
-
-    pass
+    self.vocabSize=len(self.vocab)
       
 
   # END TODO (Modify code beyond here with caution)
@@ -201,6 +229,7 @@ def classifyDir(FILTER_STOP_WORDS, BOOLEAN_NB, trainDir, testDir):
 def main():
   FILTER_STOP_WORDS = False
   BOOLEAN_NB = False
+  # print("Here")
   (options, args) = getopt.getopt(sys.argv[1:], 'fbm')
   if ('-f','') in options:
     FILTER_STOP_WORDS = True
@@ -214,3 +243,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# Go to python folder and run: (You can replace -f with -b)
+# python.exe "python/NaiveBayes.py" -f "../data/imdb1"
